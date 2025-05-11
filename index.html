@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Egg Cracker Genius Award</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at top, #fff5cc, #ffdd99);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      text-align: center;
+    }
+    h1 {
+      margin: 20px;
+      font-size: 2.5rem;
+      color: #333;
+    }
+    #egg {
+      width: 180px;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+    #count {
+      font-size: 1.4rem;
+      margin-top: 10px;
+      color: #222;
+    }
+    #controls {
+      margin-top: 20px;
+    }
+    input, button {
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    button {
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #555;
+    }
+    .popup {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      font-size: 1.5rem;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      z-index: 10;
+      animation: fadeIn 0.5s ease;
+    }
+    .popup button {
+      margin-top: 20px;
+      background: #f97f51;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🥚 Egg Cracker Challenge</h1>
+  <img src="https://assets.onecompiler.app/43b6w5qbx/43hepqft6/images__2_-removebg-preview.png" id="egg" alt="Egg">
+  <div id="count">Clicks: 0 / 1000</div>
+
+  <div id="controls">
+    <input id="clickInput" type="number" placeholder="Clicks to crack" min="1" />
+    <input id="textInput" type="text" placeholder="Award text" />
+    <button onclick="copyLink()">Copy Shareable Link</button>
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+  <script>
+    const egg = document.getElementById("egg");
+    const countText = document.getElementById("count");
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    let count = 0;
+    const urlParams = new URLSearchParams(window.location.search);
+    const goal = parseInt(urlParams.get("clicks")) || 1000;
+    const award = decodeURIComponent(urlParams.get("text") || "Most Nalla Admin in the World!");
+    countText.textContent = `Clicks: 0 / ${goal}`;
+
+    egg.addEventListener("click", () => {
+      if (count >= goal) return;
+      count++;
+      egg.style.transform = "scale(1.1)";
+      setTimeout(() => egg.style.transform = "scale(1)", 100);
+      countText.textContent = `Clicks: ${count} / ${goal}`;
+      if (count >= goal) {
+        showPopup(award);
+        fireConfetti();
+      }
+    });
+
+    function showPopup(text) {
+      const popup = document.createElement("div");
+      popup.className = "popup";
+      popup.innerHTML = `<strong>🏆 ${text}</strong><br>You cracked the egg!<br><button onclick="window.location.reload()">🔁 Try Again</button>`;
+      document.body.appendChild(popup);
+    }
+
+    function copyLink() {
+      const clicks = document.getElementById("clickInput").value || 1000;
+      const text = encodeURIComponent(document.getElementById("textInput").value || "Egg Genius Award");
+      const url = `${window.location.origin}${window.location.pathname}?clicks=${clicks}&text=${text}`;
+      navigator.clipboard.writeText(url);
+      alert("✅ Shareable link copied!");
+    }
+
+    // Confetti animation
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let particles = [];
+
+    function fireConfetti() {
+      particles = [];
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - 500,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 40 + 10,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 5,
+        });
+      }
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let p of particles) {
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.ellipse(p.x, p.y, p.r, p.r * 0.6, p.tilt, 0, 2 * Math.PI);
+        ctx.fill();
+        p.y += 2;
+        p.x += Math.sin(p.tilt) * 2;
+        p.tilt += 0.02;
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
